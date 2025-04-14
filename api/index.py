@@ -17,4 +17,4 @@ app = flask_app
 # Vercel Serverless函数入口点
 def handler(event, context):
     """Vercel Serverless函数入口点"""
-    return app
+    return app.wsgi_app
