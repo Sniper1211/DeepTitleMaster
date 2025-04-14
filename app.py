@@ -125,4 +125,5 @@ if __name__ == '__main__':
 
 # Vercel需要的入口函数
 def handler(event, context):
-    return app
+    """Vercel Serverless函数入口点"""
+    return app.wsgi_app

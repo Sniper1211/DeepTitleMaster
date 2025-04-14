@@ -8,6 +8,5 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # 导入主应用
 from app import app
 
-# Vercel Serverless函数入口
-def handler(request, response):
-    return app(request, response)
+# 这个文件作为Vercel的入口点
+# Vercel Python运行时需要一个名为index的模块，其中包含一个名为app的WSGI应用
