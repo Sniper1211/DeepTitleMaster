@@ -30,22 +30,31 @@ class TitleGenerator:
         
         # 调用DeepSeek API
         headers = {"Authorization": f"Bearer {DEEPSEEK_API_KEY}"}
-        response = requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
-            headers=headers,
-            json={
-                "model": "deepseek-chat",
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.7,
-                "max_tokens": 200
-            }
-        )
+        api_url = os.getenv('DEEPSEEK_API_URL')
         
-        # 解析结果
-        if response.status_code == 200:
-            content = response.json()['choices'][0]['message']['content']
-            return [line.strip() for line in content.split('\n') if line.strip()][:5]
-        return ["生成失败，请重试"]
+        try:
+            response = requests.post(
+                api_url,
+                headers=headers,
+                json={
+                    "model": "deepseek-chat",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.7,
+                    "max_tokens": 200
+                },
+                timeout=30
+            )
+            
+            # 解析结果
+            if response.status_code == 200:
+                content = response.json()['choices'][0]['message']['content']
+                return [line.strip() for line in content.split('\n') if line.strip()][:5]
+            else:
+                print(f"API错误: {response.status_code} - {response.text}")
+                return [f"生成失败，API返回错误: {response.status_code}"]
+        except Exception as e:
+            print(f"API调用异常: {str(e)}")
+            return [f"生成失败: {str(e)}"]
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -60,13 +69,46 @@ def index():
 def admin():
     # 简易管理后台
     if request.method == 'POST':
-        # 添加新标题
-        new_title = request.form['title']
-        with open(TITLES_DB, 'r+') as f:
-            data = json.load(f)
-            data.append({"title": new_title, "status": "active"})
-            f.seek(0)
-            json.dump(data, f)
+        action = request.form.get('action', 'add')
+        
+        if action == 'add':
+            # 添加新标题
+            new_title = request.form.get('title')
+            if new_title:
+                with open(TITLES_DB, 'r+') as f:
+                    data = json.load(f)
+                    data.append({"title": new_title, "status": "active"})
+                    f.seek(0)
+                    f.truncate()
+                    json.dump(data, f)
+        
+        elif action == 'edit':
+            # 编辑标题
+            title_id = int(request.form.get('title_id'))
+            new_title = request.form.get('new_title')
+            new_status = request.form.get('status')
+            
+            with open(TITLES_DB, 'r+') as f:
+                data = json.load(f)
+                if 0 <= title_id < len(data):
+                    if new_title:
+                        data[title_id]['title'] = new_title
+                    if new_status:
+                        data[title_id]['status'] = new_status
+                    f.seek(0)
+                    f.truncate()
+                    json.dump(data, f)
+        
+        elif action == 'delete':
+            # 删除标题
+            title_id = int(request.form.get('title_id'))
+            with open(TITLES_DB, 'r+') as f:
+                data = json.load(f)
+                if 0 <= title_id < len(data):
+                    del data[title_id]
+                    f.seek(0)
+                    f.truncate()
+                    json.dump(data, f)
     
     with open(TITLES_DB, 'r') as f:
         titles = json.load(f)

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>标题库管理</title>
+    <style>
+        body { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .title-item { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
+        .actions { margin-top: 5px; }
+        .edit-form { display: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>标题库管理</h1>
+    <form method="POST">
+        <input type="hidden" name="action" value="add">
+        <input type="text" name="title" placeholder="输入新标题" required style="width: 400px;">
+        <button type="submit">添加标题</button>
+    </form>
+
+    <h3>现有标题库（{{ titles|length }}条）</h3>
+    <div>
+        {% for item in titles %}
+        <div class="title-item">
+            <div>
+                <strong>{{ loop.index0 }}. {{ item.title }}</strong> - <span>{{ item.status }}</span>
+            </div>
+            <div class="actions">
+                <button onclick="toggleEditForm('edit-{{ loop.index0 }}')">编辑</button>
+                <form method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="title_id" value="{{ loop.index0 }}">
+                    <button type="submit" onclick="return confirm('确定要删除这个标题吗？')">删除</button>
+                </form>
+            </div>
+            <div id="edit-{{ loop.index0 }}" class="edit-form">
+                <form method="POST">
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="title_id" value="{{ loop.index0 }}">
+                    <input type="text" name="new_title" value="{{ item.title }}" style="width: 400px;">
+                    <select name="status">
+                        <option value="active" {% if item.status == 'active' %}selected{% endif %}>active</option>
+                        <option value="inactive" {% if item.status == 'inactive' %}selected{% endif %}>inactive</option>
+                    </select>
+                    <button type="submit">保存</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function toggleEditForm(id) {
+            const form = document.getElementById(id);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
