@@ -17,15 +17,16 @@ app = flask_app
 # Vercel Serverless函数入口点
 from flask import Response
 
-def handler(request):
+def handler(event, context):
     """Vercel Serverless函数入口点
     
     Vercel的Python运行时会调用这个函数处理HTTP请求
     参数:
-        request: 包含HTTP请求信息的对象
+        event: 包含HTTP请求信息的对象
+        context: 包含运行时上下文信息的对象
     
     返回:
-        返回Flask应用的响应
+        返回Flask应用的WSGI应用，用于处理HTTP请求
     """
-    # 直接返回Flask应用实例，让Vercel处理WSGI转换
-    return app
+    # 返回WSGI应用，而不是Flask应用实例
+    return app.wsgi_app
