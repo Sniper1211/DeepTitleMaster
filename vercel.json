@@ -12,6 +12,12 @@
       "dest": "/api/index.py"
     }
   ],
+  "functions": {
+    "api/index.py": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "env": {
     "DEEPSEEK_API_KEY": "${DEEPSEEK_API_KEY}",
     "DEEPSEEK_API_URL": "${DEEPSEEK_API_URL}"

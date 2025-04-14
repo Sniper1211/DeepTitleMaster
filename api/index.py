@@ -13,3 +13,8 @@ from app import app as flask_app
 
 # 显式导出app变量，使Vercel能够正确识别并调用Flask应用
 app = flask_app
+
+# Vercel Serverless函数入口点
+def handler(event, context):
+    """Vercel Serverless函数入口点"""
+    return app
