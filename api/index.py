@@ -28,5 +28,5 @@ def handler(event, context):
     返回:
         返回Flask应用的WSGI应用，用于处理HTTP请求
     """
-    # 返回Flask应用实例本身，而不是wsgi_app属性
-    return app
+    # 返回Flask应用的WSGI应用
+    return app.wsgi_app
