@@ -16,9 +16,17 @@ class TitleGenerator:
     @staticmethod
     def generate(keywords, platform='general'):
         """核心生成逻辑"""
-        # 读取模板配置
-        with open(CONFIG_FILE, 'r') as f:
-            templates = json.load(f).get(platform, {})
+        try:
+            # 读取模板配置
+            with open(CONFIG_FILE, 'r') as f:
+                templates = json.load(f).get(platform, {})
+        except (IOError, json.JSONDecodeError) as e:
+            print(f"配置文件读取错误: {str(e)}")
+            templates = {
+                "description": "通用平台",
+                "rules": ["数字开头", "20字以内"],
+                "examples": ["1个月瘦20斤，这样吃就对了", "3招教你月入过万"]
+            }
         
         # 构建prompt
         prompt = f"""你是一个专业的内容运营专家，请根据以下要求生成5个爆款标题：
@@ -117,14 +125,28 @@ def admin():
 if __name__ == '__main__':
     app.run(debug=True)
 
-# 初始化数据库文件
-db_dir = os.path.join(os.path.dirname(__file__), 'database')
-os.makedirs(db_dir, exist_ok=True)
-if not os.path.exists(TITLES_DB):
-    with open(TITLES_DB, 'w') as f:
-        json.dump([], f)
+def init_database():
+    """初始化数据库文件"""
+    db_dir = os.path.join(os.path.dirname(__file__), 'database')
+    os.makedirs(db_dir, exist_ok=True)
+    if not os.path.exists(TITLES_DB):
+        with open(TITLES_DB, 'w') as f:
+            json.dump([], f)
+    if not os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump({
+                "general": {
+                    "description": "通用平台",
+                    "rules": ["数字开头", "20字以内"],
+                    "examples": ["1个月瘦20斤，这样吃就对了", "3招教你月入过万"]
+                }
+            }, f)
+
+# 在应用启动时初始化数据库
+init_database()
 
 # Vercel需要的入口函数
 def handler(event, context):
     """Vercel Serverless函数入口点"""
+    init_database()  # 确保在Vercel环境中也初始化数据库
     return app.wsgi_app
