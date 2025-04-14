@@ -10,3 +10,6 @@ from app import app
 
 # 这个文件作为Vercel的入口点
 # Vercel Python运行时需要一个名为index的模块，其中包含一个名为app的WSGI应用
+
+# 显式导出app变量，使Vercel能够正确识别并调用Flask应用
+app = app
