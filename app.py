@@ -4,13 +4,13 @@ from flask import Flask, request, render_template
 from dotenv import load_dotenv
 import requests
 
-load_dotenv()
 app = Flask(__name__)
 
 # 简易数据库路径
-TITLES_DB = os.path.join('database', 'titles.json')
-CONFIG_FILE = os.path.join('database', 'config.json')
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
+TITLES_DB = os.path.join(os.path.dirname(__file__), 'database', 'titles.json')
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'database', 'config.json')
+DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
+DEEPSEEK_API_URL = os.environ.get('DEEPSEEK_API_URL')
 
 class TitleGenerator:
     @staticmethod
@@ -30,7 +30,7 @@ class TitleGenerator:
         
         # 调用DeepSeek API
         headers = {"Authorization": f"Bearer {DEEPSEEK_API_KEY}"}
-        api_url = os.getenv('DEEPSEEK_API_URL')
+        api_url = DEEPSEEK_API_URL
         
         try:
             response = requests.post(
@@ -115,13 +115,14 @@ def admin():
     return render_template('admin.html', titles=titles)
 
 if __name__ == '__main__':
-    # 初始化数据库文件
-    if not os.path.exists(TITLES_DB):
-        os.makedirs('database', exist_ok=True)
-        with open(TITLES_DB, 'w') as f:
-            json.dump([], f)
-    
     app.run(debug=True)
+
+# 初始化数据库文件
+db_dir = os.path.join(os.path.dirname(__file__), 'database')
+os.makedirs(db_dir, exist_ok=True)
+if not os.path.exists(TITLES_DB):
+    with open(TITLES_DB, 'w') as f:
+        json.dump([], f)
 
 # Vercel需要的入口函数
 def handler(event, context):
