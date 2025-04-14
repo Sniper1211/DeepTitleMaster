@@ -122,3 +122,7 @@ if __name__ == '__main__':
             json.dump([], f)
     
     app.run(debug=True)
+
+# Vercel需要的入口函数
+def handler(event, context):
+    return app
